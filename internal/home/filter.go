@@ -689,37 +689,36 @@ func (filter *filter) LastTimeUpdated() time.Time {
 func enableFilters(async bool) {
 	var filters []dnsfilter.Filter
 	var whiteFilters []dnsfilter.Filter
-	if config.DNS.FilteringEnabled {
-		// convert array of filters
+	//if config.DNS.FilteringEnabled {
+	// convert array of filters
+	userFilter := userFilter()
+	f := dnsfilter.Filter{
+		ID:   userFilter.ID,
+		Data: userFilter.Data,
+	}
+	filters = append(filters, f)
 
-		userFilter := userFilter()
+	for _, filter := range config.Filters {
+		if !filter.Enabled {
+			continue
+		}
 		f := dnsfilter.Filter{
-			ID:   userFilter.ID,
-			Data: userFilter.Data,
+			ID:       filter.ID,
+			FilePath: filter.Path(),
 		}
 		filters = append(filters, f)
-
-		for _, filter := range config.Filters {
-			if !filter.Enabled {
-				continue
-			}
-			f := dnsfilter.Filter{
-				ID:       filter.ID,
-				FilePath: filter.Path(),
-			}
-			filters = append(filters, f)
-		}
-		for _, filter := range config.WhitelistFilters {
-			if !filter.Enabled {
-				continue
-			}
-			f := dnsfilter.Filter{
-				ID:       filter.ID,
-				FilePath: filter.Path(),
-			}
-			whiteFilters = append(whiteFilters, f)
-		}
 	}
-
+	for _, filter := range config.WhitelistFilters {
+		if !filter.Enabled {
+			continue
+		}
+		f := dnsfilter.Filter{
+			ID:       filter.ID,
+			FilePath: filter.Path(),
+		}
+		whiteFilters = append(whiteFilters, f)
+	}
+	//}
+	Context.dnsFilter.GlobalFilteringEnabled = config.DNS.FilteringEnabled
 	_ = Context.dnsFilter.SetFilters(filters, whiteFilters, async)
 }

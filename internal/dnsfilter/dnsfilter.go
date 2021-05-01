@@ -110,6 +110,8 @@ type DNSFilter struct {
 	// Channel for passing data to filters-initializer goroutine
 	filtersInitializerChan chan filtersInitializerParams
 	filtersInitializerLock sync.Mutex
+
+	GlobalFilteringEnabled bool
 }
 
 // Filter represents a filter list
@@ -226,6 +228,7 @@ func (d *DNSFilter) WriteDiskConfig(c *Config) {
 // When filters are set asynchronously, the old filters continue working until the new filters are ready.
 //  In this case the caller must ensure that the old filter files are intact.
 func (d *DNSFilter) SetFilters(blockFilters, allowFilters []Filter, async bool) error {
+	log.Info("************ Block filters %v", len(blockFilters))
 	if async {
 		params := filtersInitializerParams{
 			allowFilters: allowFilters,
@@ -666,7 +669,7 @@ func (d *DNSFilter) matchHostProcessAllowList(host string, dnsres urlfilter.DNSR
 }
 
 // matchHost is a low-level way to check only if hostname is filtered by rules,
-// skipping expensive safebrowsing and parental lookups.
+// skipping expensive safebrowsing and parental lookups.``
 func (d *DNSFilter) matchHost(host string, qtype uint16, setts RequestFilteringSettings) (res Result, err error) {
 	d.engineLock.RLock()
 	// Keep in mind that this lock must be held no just when calling Match()

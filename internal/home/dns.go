@@ -324,7 +324,6 @@ func startDNSServer() error {
 	if isRunning() {
 		return fmt.Errorf("unable to start forwarding DNS server: Already running")
 	}
-
 	enableFilters(false)
 
 	Context.clients.Start()
